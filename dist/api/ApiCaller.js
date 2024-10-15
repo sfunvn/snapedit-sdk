@@ -20,7 +20,8 @@ class ApiCaller {
         this.axiosInstance = axios_1.default.create({
             baseURL: BASE_URL,
             headers: {
-                'X-API-KEY': `${apiKey}`
+                'X-API-KEY': `${apiKey}`,
+                'Content-Type': 'multipart/form-data',
             },
         });
     }

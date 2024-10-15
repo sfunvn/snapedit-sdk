@@ -9,7 +9,8 @@ export default class ApiCaller {
         this.axiosInstance = axios.create({
             baseURL: BASE_URL,
             headers: {
-                'X-API-KEY': `${apiKey}`
+                'X-API-KEY': `${apiKey}`,
+                'Content-Type': 'multipart/form-data',
             },
         });
     }
@@ -17,6 +18,7 @@ export default class ApiCaller {
     async get(endpoint: string): Promise<AxiosResponse> {
         return this.axiosInstance.get(endpoint);
     }
+
 
     async post(endpoint: string, data: any): Promise<AxiosResponse> {
         return this.axiosInstance.post(endpoint, data);
