@@ -1,18 +1,15 @@
 
-# My SDK Package
+# SnapEdit SDK Package
 
 [![NPM version](https://img.shields.io/npm/v/snapedit-sdk.svg)](https://www.npmjs.com/package/snapedit-sdk)
 [![License](https://img.shields.io/npm/l/snapedit-sdk.svg)](https://github.com/your-username/snapedit-sdk/blob/main/LICENSE)
 [![Issues](https://img.shields.io/github/issues/your-username/snapedit-sdk)](https://github.com/your-username/snapedit-sdk/issues)
 
-My SDK Package is a powerful and lightweight SDK that simplifies common tasks for developers. With its easy-to-use API, you can quickly integrate background removal, image processing, and more into your applications.
+SnapEdit SDK Package is a powerful and lightweight SDK that simplifies common tasks for developers. With its easy-to-use API, you can quickly integrate background removal, image processing, and more into your applications.
 
 ## Features
 
 - 🌟 **Background removal**: Effortlessly remove backgrounds from images.
-- ⚡ **Base64 to Blob**: Easily convert Base64 strings to Blob objects.
-- 📦 **File handling**: Seamlessly manage files and convert between formats.
-- 🔄 **Image processing**: Resize, apply masks, and perform advanced image manipulation.
   
 ## Installation
 
@@ -87,8 +84,8 @@ This project is licensed under the MIT License. See the [LICENSE](https://github
 
 ## Support
 
-For any issues, please visit the [GitHub Issues](https://github.com/your-username/snapedit-sdk/issues) page or contact us at [your-email@example.com](mailto:your-email@example.com).
+For any issues, please visit the [GitHub Issues](https://github.com/your-username/snapedit-sdk/issues) page or contact us at [contact@silverai.com](mailto:your-email@example.com).
 
 ---
 
-Made with ❤️ by [Your Name](https://github.com/your-username)
+Made with ❤️ by [SilverAI](https://github.com/your-username)
