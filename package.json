@@ -1,6 +1,6 @@
 {
   "name": "snapedit-sdk",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "SDK for SnapEdit web",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,7 +29,7 @@
   "bugs": {
     "url": "https://github.com/sfunvn/snapedit-sdk/issues"
   },
-  "homepage": "https://github.com/sfunvn/snapedit-sdk",
+  "homepage": "https://snapedit.app",
   "devDependencies": {
     "form-data": "^4.0.1",
     "typescript": "^5.6.3"
