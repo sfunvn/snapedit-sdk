@@ -24,12 +24,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/<your-username>/my-sdk-package.git"
+    "url": "https://github.com/sfunvn/snapedit-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/<your-username>/my-sdk-package/issues"
+    "url": "https://github.com/sfunvn/snapedit-sdk/issues"
   },
-  "homepage": "https://github.com/<your-username>/my-sdk-package#readme",
+  "homepage": "https://github.com/sfunvn/snapedit-sdk#readme",
   "devDependencies": {
     "form-data": "^4.0.1",
     "typescript": "^5.6.3"
