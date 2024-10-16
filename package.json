@@ -15,7 +15,7 @@
     "nodejs"
   ],
   "author": "Your Name",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@types/node": "^22.7.5",
     "axios": "^1.7.7",
