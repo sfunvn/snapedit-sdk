@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/npm/l/snapedit-sdk.svg)](https://github.com/sfunvn/snapedit-sdk/blob/main/LICENSE)
 [![Issues](https://img.shields.io/github/issues/your-username/snapedit-sdk)](https://github.com/sfunvn/snapedit-sdk/issues)
 
-SnapEdit SDK Package is a powerful and lightweight SDK that simplifies common tasks for developers. With its easy-to-use API, you can quickly integrate background removal, image processing, and more into your applications.
+The SnapEdit SDK Package is a powerful and lightweight software development kit that streamlines the integration of complex functionalities into applications. Its easy-to-use API allows developers to quickly incorporate features such as background removal, object detection, object removal, and image enhancement. Designed to boost productivity, SnapEdit SDK supports various tasks, making it ideal for rapid development and deployment of image-based applications.
 
 ## Features
 
