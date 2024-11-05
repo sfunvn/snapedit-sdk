@@ -10,6 +10,9 @@ SnapEdit SDK Package is a powerful and lightweight SDK that simplifies common ta
 ## Features
 
 - 🌟 **Background removal**: Effortlessly remove backgrounds from images.
+- ✨ **Image Enhancement**: Enhances image quality, including face enhancement.
+- 🎨 **Object Detection**: Automatically detects objects within an image.
+- 🖌 **Object Removal**: Allows removal of unwanted objects with customizable masks.
   
 ## Installation
 
@@ -27,29 +30,36 @@ yarn add snapedit-sdk
 
 ## Usage
 
-Here's a quick example of how to use the SDK to remove the background from an image:
+Here's a quick example of how to use the SDK:
 
 ```typescript
 import { SnapEditSdk } from 'snapedit-sdk';
 
 const sdk = new SnapEditSdk('YOUR_API_KEY');
 
+// Remove background Example
 async function removeBackground(imageBase64: string) {
     const response = await sdk.handleRemoveBg(imageBase64);
     console.log(response); // Image with background removed
 }
-```
 
-### Image Processing Example
+// Image Enhancement Example
+async function enhanceImage(imageBase64: string, zoomFactor: 2 | 4) {
+    const response = await sdk.handleEnhanceImage(imageBase64, zoomFactor);
+    console.log(response); // Enhanced image data URL
+}
 
-You can also apply a mask to an image:
+// Object Detection Example
+async function detectObjects(imageBase64: string) {
+    const detectionResults = await sdk.handleDetectObject(imageBase64);
+    console.log(detectionResults); // Outputs detected objects and their coordinates
+}
 
-```typescript
-import { applyMaskImage } from 'snapedit-sdk';
-
-async function processImage(baseImage: File, maskBase64: string) {
-    const result = await applyMaskImage(baseImage, maskBase64);
-    console.log(result); // Processed image as a base64 string
+// Object Removal Example
+async function removeObject(imageBase64: string, maskBase64: string) {
+    const newMask = maskBase64; // Base64 encoded mask for the area to remove
+    const response = await sdk.handleRemoveObject(imageBase64, newMask);
+    console.log(response); // Image with object removed
 }
 ```
 
@@ -63,9 +73,30 @@ async function processImage(baseImage: File, maskBase64: string) {
 
 Removes the background from a Base64 encoded image.
 
-#### `applyMaskImage(base: File, mask: string): Promise<string>`
 
-Applies a mask to the input image and returns a processed image as a Base64 string.
+#### `handleEnhanceImage(imageBase64: string, zoomFactor: 2 | 4): Promise<string>`
+
+Enhances the image quality by scaling up using AI techniques. Depending on the input `zoomFactor`, the image can be enhanced by 2x or 4x, improving clarity and detail.
+
+- **imageBase64**: A Base64 encoded string of the image you want to enhance.
+- **zoomFactor**: The factor by which the image should be scaled. Can be either 2 or 4.
+
+
+#### `handleDetectObject(imageBase64: string): Promise<DetectionResponse>`
+
+Detects objects within an image and returns their bounding boxes and other relevant data. Useful for applications requiring automation in object recognition and tracking.
+
+- **imageBase64**: A Base64 encoded string of the image for object detection.
+
+
+#### `handleRemoveObject(imageBase64: string, newMask: string, oldMask?: string): Promise<RemoveObjectImage>`
+
+Removes an object from the image based on a mask that defines the area to clear. This function allows for precise control over object removal, which can be tailored to specific needs such as removing unwanted items or editing image content.
+
+- **imageBase64**: A Base64 encoded string of the image from which the object is to be removed.
+- **newMask**: A Base64 encoded string of the mask that highlights the object to remove.
+- **oldMask**: Optional. A Base64 encoded string of a previous mask, if applicable, to refine the removal process.
+
 
 ## Contributing
 
