@@ -69,9 +69,11 @@ async function removeObject(imageBase64: string, maskBase64: string) {
 
 - **apiKey**: Your API key from the SnapEdit platform.
   
-#### `handleRemoveBg(imageBase64: string): Promise<any>`
+#### `handleRemoveBg(imageBase64: string): Promise<string>`
 
 Removes the background from a Base64 encoded image.
+
+- **imageBase64**: A Base64 encoded string of the image you want to remove background.
 
 
 #### `handleEnhanceImage(imageBase64: string, zoomFactor: 2 | 4): Promise<string>`
