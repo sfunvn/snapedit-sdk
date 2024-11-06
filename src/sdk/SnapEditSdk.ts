@@ -2,7 +2,6 @@ import ApiCaller from '../api/ApiCaller';
 
 import {DetectionResponse, RemoveObjectImage, SnapEditSdkType} from './types';
 
-const {createCanvas, loadImage} = require('canvas');
 const {Buffer} = require('buffer');
 const FormData = require('form-data');
 const sharp = require('sharp');
@@ -12,30 +11,40 @@ function base64ToBuffer(base64: string): Buffer {
     return Buffer.from(base64String, 'base64');
 }
 
+const getImageDimensions = async (base64: string): Promise<{ width: number; height: number }> => {
+    const imageBuffer = Buffer.from(base64.split(',')[1], 'base64');
+
+    const metadata = await sharp(imageBuffer).metadata();
+
+    return {width: metadata.width, height: metadata.height};
+};
+
 function getMimeType(base64: string) {
     const mimeType = base64.match(/data:(.*?);base64/);
     return mimeType ? mimeType[1] : 'application/octet-stream';
 }
 
-const applyMaskImage = async (
-    base: string,
-    mask: string,
-) => {
-    const [sourceImg, maskImg] = await Promise.all([
-        loadImage(base),
-        loadImage(`data:image/png;base64,${mask}`),
-    ]);
+const applyMaskImage = async (base: string, mask: string): Promise<string> => {
+    const baseImageBuffer = Buffer.from(base.split(',')[1], 'base64');
+    const maskImageBuffer = Buffer.from(mask, 'base64');
 
-    const canvas = createCanvas(sourceImg.width, sourceImg.height);
-    const ctx = canvas.getContext('2d');
+    const sourceImage = sharp(baseImageBuffer);
+    const maskImage = sharp(maskImageBuffer);
 
-    ctx.drawImage(sourceImg, 0, 0);
+    const {width, height} = await sourceImage.metadata();
 
-    ctx.globalCompositeOperation = 'destination-in';
-    ctx.drawImage(maskImg, 0, 0, sourceImg.width, sourceImg.height);
+    const resizedMaskBuffer = await maskImage
+        .resize(width, height)
+        .png()
+        .toBuffer();
 
-    return canvas.toDataURL('image/png')
-}
+    const outputImageBuffer = await sourceImage
+        .composite([{input: resizedMaskBuffer, blend: 'dest-in'}])
+        .png()
+        .toBuffer();
+
+    return `data:image/png;base64,${outputImageBuffer.toString('base64')}`;
+};
 
 const resizeBase64Image = async (base64Image: string, size = 1280): Promise<Buffer> => {
     const [metadata, base64Data] = base64Image.split(';base64,');
@@ -62,35 +71,75 @@ const handleEnhanceLargeImage = async (
     imageData: Buffer,
     faces?: { box: number[]; png: string[] }[]
 ): Promise<string> => {
-    if (!imageData) return '';
+    if (!imageData) return Buffer.from('');
 
     try {
-        const image = await loadImage(imageData);
+        let enhancedImage = sharp(imageData);
 
-        const canvas = createCanvas(image.width, image.height);
-        const context = canvas.getContext('2d');
+        if (faces?.length) {
+            const faceImages = await Promise.all(
+                faces.map(async (face) => {
+                    const faceImageBuffer = Buffer.from(face.png[0], 'base64');
+                    return {
+                        buffer: faceImageBuffer,
+                        box: face.box
+                    };
+                })
+            );
 
-        context.drawImage(image, 0, 0, image.width, image.height);
+            for (const face of faceImages) {
+                const {box, buffer} = face;
+                const [x, y, width, height] = box;
 
-        if (!faces?.length) {
-            return canvas.toDataURL();
+                enhancedImage = enhancedImage.composite([{
+                    input: buffer,
+                    top: y,
+                    left: x,
+                    blend: 'over'
+                }]);
+            }
         }
 
-        for (const face of faces) {
-            const [x, y, width, height] = face.box;
-            const faceImageBuffer = Buffer.from(face.png[0], 'base64');
-            const faceImage = await loadImage(faceImageBuffer);
-
-
-            context.drawImage(faceImage, x, y, width, height);
-        }
-
-
-        return canvas.toDataURL();
+        const output = await enhancedImage.toBuffer();
+        return `data:image/png;base64,${output.toString('base64')}`;
     } catch (error) {
-        throw new Error(`Error processing enhanced image: ${error.message}`);
+        throw new Error(`Error processing enhanced image`);
     }
 };
+
+const handleApplyObject = async (imageBase64: string, response: RemoveObjectImage) => {
+    const cutoutFollowBackend = async (response: RemoveObjectImage) => {
+        if (!response) return '';
+
+        const imageBuffer = Buffer.from(response.image, 'base64');
+        const maskBuffer = Buffer.from(response.mask, 'base64');
+
+        const overlayImageWithoutAlpha = await sharp(maskBuffer)
+            .blur(1)
+            .toBuffer();
+
+        return await sharp(imageBuffer)
+            .composite([{input: overlayImageWithoutAlpha, blend: 'dest-in'}])
+            .png()
+            .toBuffer();
+    };
+
+
+    const imageBuffer = Buffer.from(imageBase64.split(',')[1], 'base64');
+    const cutoutImageBase64 = await cutoutFollowBackend(response);
+
+    if (!cutoutImageBase64) return '';
+    const { width, height } = await sharp(imageBuffer).metadata();
+    const resizedCutoutBuffer = await sharp(cutoutImageBase64)
+        .resize(width, height)
+        .toBuffer();
+
+    const finalImageBuffer = await sharp(imageBuffer)
+        .composite([{ input: resizedCutoutBuffer, blend: 'over' }])
+        .toBuffer();
+
+    return `data:image/jpeg;base64,${finalImageBuffer.toString('base64')}`
+}
 
 export const FILE = {
     MAX_SIZE_DOWNLOAD: 3000,
@@ -106,7 +155,7 @@ export class SnapEditSdk implements SnapEditSdkType {
     }
 
     async handleRemoveBg(imageBase64: string): Promise<string> {
-        if (!imageBase64) return
+        if (!imageBase64) return ''
 
         const formData = new FormData();
 
@@ -128,12 +177,12 @@ export class SnapEditSdk implements SnapEditSdkType {
     }
 
     async handleEnhanceImage(imageBase64: string, zoomFactor: 2 | 4): Promise<string> {
-        if (!imageBase64) return
+        if (!imageBase64) return ''
 
         const mimeType = getMimeType(imageBase64);
 
         const formData = new FormData();
-        const {width, height} = await loadImage(imageBase64)
+        const {width, height} = await getImageDimensions(imageBase64)
 
         const largestSide = Math.max(width, height)
         let postImageData = null
@@ -170,8 +219,8 @@ export class SnapEditSdk implements SnapEditSdkType {
         }
     }
 
-    async handleDetectObject(imageBase64: string): Promise<DetectionResponse> {
-        if (!imageBase64) return
+    async handleDetectObject(imageBase64: string): Promise<DetectionResponse | null> {
+        if (!imageBase64) return null
 
         const mimeType = getMimeType(imageBase64);
 
@@ -190,35 +239,44 @@ export class SnapEditSdk implements SnapEditSdkType {
         }
     }
 
-    async handleRemoveObject(imageBase64: string, newMask: string, oldMask?: string): Promise<RemoveObjectImage> {
-        if (!imageBase64) return
+    async handleRemoveObject(imageBase64: string, newMask: string, oldMask?: string): Promise<string> {
+        if (!imageBase64) return ''
 
         const mimeType = getMimeType(imageBase64);
 
         const formData = new FormData();
-
-        formData.append('original_preview_image', await resizeBase64Image(imageBase64, 1200), {
+        const resizedImageBuffer = await resizeBase64Image(imageBase64, 1200);
+        formData.append('original_preview_image', resizedImageBuffer, {
             filename: `image.${mimeType.split('/')[1]}`,
             contentType: mimeType
         });
+        const { width, height } = await sharp(resizedImageBuffer).metadata();
 
         const maskType = getMimeType(newMask);
-        formData.append('mask_brush', await resizeBase64Image(newMask, 1200), {
+        const resizedMaskBuffer = await sharp(Buffer.from(newMask.split(',')[1], 'base64'))
+            .resize(width, height)
+            .png()
+            .toBuffer();
+        formData.append('mask_brush', resizedMaskBuffer, {
             filename: `mask.${maskType.split('/')[1]}`,
             contentType: maskType
         });
 
         if (oldMask) {
             const maskType = getMimeType(oldMask);
-            formData.append('mask_base', await resizeBase64Image(oldMask, 1200), {
+            const resizedOldMaskBuffer = await sharp(Buffer.from(oldMask.split(',')[1], 'base64'))
+                .resize(width, height)
+                .png()
+                .toBuffer();
+            formData.append('mask_base', resizedOldMaskBuffer, {
                 filename: `mask.${maskType.split('/')[1]}`,
                 contentType: maskType
             });
         }
 
         try {
-            const response = await this.apiCaller.post('https://platform.snapedit.app/api/object_removal/v1/super_erase', formData)
-            return response.data
+            const response = await this.apiCaller.post('https://platform.snapedit.app/api/object_removal/v1/erase', formData)
+            return await handleApplyObject(imageBase64, response?.data?.edited_image)
         } catch (error) {
             throw error;
         }

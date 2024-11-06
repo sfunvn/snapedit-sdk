@@ -23,12 +23,11 @@
   "dependencies": {
     "@types/node": "^22.7.5",
     "axios": "^1.7.7",
-    "canvas": "^2.11.2",
     "sharp": "^0.33.5"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sfunvn/snapedit-sdk.git"
+    "url": "git+https://github.com/sfunvn/snapedit-sdk.git"
   },
   "bugs": {
     "url": "https://github.com/sfunvn/snapedit-sdk/issues"

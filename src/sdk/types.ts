@@ -6,10 +6,10 @@ export interface User {
 }
 
 export interface SnapEditSdkType {
-    handleRemoveBg(image: string): string;
-    handleEnhanceImage(image: string, zoomFactor: 2 | 4): string;
-    handleDetectObject(image: string): DetectionResponse;
-    handleRemoveObject(image: string, newMask: string, oldMask: string): RemoveObjectImage;
+    handleRemoveBg(image: string): Promise<string>;
+    handleEnhanceImage(image: string, zoomFactor: 2 | 4): Promise<string>;
+    handleDetectObject(image: string): Promise<DetectionResponse | null>;
+    handleRemoveObject(image: string, newMask: string, oldMask: string): Promise<string>;
 }
 
 export interface BoundingBox {
